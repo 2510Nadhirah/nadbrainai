@@ -57,7 +57,7 @@ if source_radio == "IMAGE":
         st.image(uploaded_image)
 
     else:
-        st.image("brain2/assets/sample_image.jpg")
+        st.image("braintest-main/brain2/assets/sample_image.jpg")
         st.write("Click on 'Browse Files' in the sidebar to run inference on an image.")
 
 if source_radio == "VIDEO":
@@ -78,7 +78,7 @@ if source_radio == "VIDEO":
             play_video(temporary_location)
 
     else:
-        st.video("brain2/assets/sample_video.mp4")
+        st.video("braintest-main/brain2/assets/sample_video.mp4")
         st.write("Click on 'Browse Files' in the sidebar to run inference on a video.")
 
 if source_radio == "WEBCAM":

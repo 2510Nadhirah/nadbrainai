@@ -5,21 +5,21 @@ import matplotlib.pyplot as plt
 
 core = ov.Core()
 
-model_face = core.read_model(model='brain2/models/face-detection-adas-0001.xml')
+model_face = core.read_model(model='braintest-main/brain2/models/face-detection-adas-0001.xml')
 compiled_model_face = core.compile_model(model_face, device_name="CPU")
 
 input_layer_face = compiled_model_face.input(0)
 output_layer_face = compiled_model_face.output(0)
 
 
-model_emo = core.read_model(model='brain2/models/emotions-recognition-retail-0003.xml')
+model_emo = core.read_model(model='braintest-main/brain2/models/emotions-recognition-retail-0003.xml')
 compiled_model_emo = core.compile_model(model = model_emo, device_name="CPU")
 
 input_layer_emo = compiled_model_emo.input(0)
 output_layer_emo = compiled_model_emo.output(0)
 
 
-model_ag = core.read_model(model='brain2/models/age-gender-recognition-retail-0013.xml')
+model_ag = core.read_model(model='braintest-main/brain2/models/age-gender-recognition-retail-0013.xml')
 compiled_model_ag = core.compile_model(model = model_ag, device_name="CPU")
 
 input_layer_ag = compiled_model_ag.input(0)

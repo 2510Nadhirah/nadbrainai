@@ -128,7 +128,7 @@ if source_radio == "IMAGE":
         st.image(visualized_image, channels="BGR")
         st.image(uploaded_image)
     else:
-        st.image("data/userpage.png")
+        st.image("braintest-main/brain2/assets/userpage.png")
         st.write("Click on 'Browse Files' in the sidebar to run inference on an image.")
 
 if source_radio == "VIDEO":
@@ -148,7 +148,7 @@ if source_radio == "VIDEO":
         if st.button("Replay"):
             play_video(temporary_location)
     else:
-        st.video("data/uservidd.mp4")
+        st.video("braintest-main/brain2/assets/uservidd.mp4")
         st.write("Click on 'Browse Files' in the sidebar to run inference on a video.")
 
 if source_radio == "WEBCAM":

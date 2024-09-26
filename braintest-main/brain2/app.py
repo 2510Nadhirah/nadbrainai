@@ -143,7 +143,7 @@ if source_radio == "IMAGE":
         st.image(visualized_image, channels="BGR", caption="Processed Image")
         st.image(uploaded_image, caption="Uploaded Image")
     else:
-        st.image("data/emotions.png", caption="Upload an image to analyze.")
+        st.image("braintest-main/brain2/assets/emotions.png", caption="Upload an image to analyze.")
 
 if source_radio == "VIDEO":
     st.sidebar.header("Upload Video")
@@ -161,7 +161,7 @@ if source_radio == "VIDEO":
         if st.button("Replay"):
             play_video(temporary_location)
     else:
-        st.video("data/emobuddy.mp4")  # Removed caption
+        st.video("braintest-main/brain2/assets/emobuddy.mp4)  # Removed caption
         st.write("Upload a video to analyze.")
 
 if source_radio == "WEBCAM":

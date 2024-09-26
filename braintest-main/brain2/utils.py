@@ -5,25 +5,19 @@ import matplotlib.pyplot as plt
 
 core = ov.Core()
 
-model_face = core.read_model(model='braintest-main/brain2/models/face-detection-adas-0001.xml')
-compiled_model_face = core.compile_model(model_face, device_name="CPU")
+# Load and compile the face detection model
+model_face = core.read_model(model='Model/face-detection-adas-0001.xml')
+compiled_model_face = core.compile_model(model=model_face, device_name="CPU")
 
 input_layer_face = compiled_model_face.input(0)
 output_layer_face = compiled_model_face.output(0)
 
-
-model_emo = core.read_model(model='braintest-main/brain2/models/emotions-recognition-retail-0003.xml')
-compiled_model_emo = core.compile_model(model = model_emo, device_name="CPU")
+# Load and compile the emotion recognition model
+model_emo = core.read_model(model='Model/emotions-recognition-retail-0003.xml')
+compiled_model_emo = core.compile_model(model=model_emo, device_name="CPU")
 
 input_layer_emo = compiled_model_emo.input(0)
 output_layer_emo = compiled_model_emo.output(0)
-
-
-model_ag = core.read_model(model='braintest-main/brain2/models/age-gender-recognition-retail-0013.xml')
-compiled_model_ag = core.compile_model(model = model_ag, device_name="CPU")
-
-input_layer_ag = compiled_model_ag.input(0)
-output_layer_ag = compiled_model_ag.output
 
 def preprocess(image, input_layer):
     N, input_channels, input_height, input_width = input_layer.shape
@@ -36,74 +30,49 @@ def preprocess(image, input_layer):
 
 def find_faceboxes(image, results, confidence_threshold):
     results = results.squeeze()
-    
-    scores = results[:,2]
+
+    scores = results[:, 2]
     boxes = results[:, -4:]
-    
+
     face_boxes = boxes[scores >= confidence_threshold]
     scores = scores[scores >= confidence_threshold]
-    
+
     image_h, image_w, image_channels = image.shape
     
-    face_boxes = face_boxes*np.array([image_w, image_h, image_w, image_h])
+    face_boxes = face_boxes * np.array([image_w, image_h, image_w, image_h])
     face_boxes = face_boxes.astype(np.int64)
-    
+
     return face_boxes, scores
 
-def draw_age_gender_emotion(face_boxes, image):
-    EMOTION_NAMES = ['neutral', 'happy', 'sad', 'surprise', 'anger']
+def draw_emotion(face_boxes, image):
     show_image = image.copy()
 
-    for i in range(len(face_boxes)):
+    EMOTION_NAMES = ['neutral', 'happy', 'sad', 'surprise', 'anger']
 
+    for i in range(len(face_boxes)):
         xmin, ymin, xmax, ymax = face_boxes[i]
         face = image[ymin:ymax, xmin:xmax]
-        # --- emotion ---
+        
+        # --- Emotion ---
         input_image = preprocess(face, input_layer_emo)
         results_emo = compiled_model_emo([input_image])[output_layer_emo]
-
+        
         results_emo = results_emo.squeeze()
         index = np.argmax(results_emo)
-        # --- emotion ---
 
-        # --- age and gender ---
-        input_image_ag = preprocess(face, input_layer_ag)
-        results_ag = compiled_model_ag([input_image_ag])
-        age, gender = results_ag[1], results_ag[0]
-        age = np.squeeze(age)
-        age = int(age*100)
-
-        gender = np.squeeze(gender)
-
-        if(gender[0]>=0.65):
-            gender = "female"
-            box_color = (200, 200, 0)
-            
-        elif(gender[1]>=0.55):
-            gender = "male"
-            box_color = (0, 200, 200)
-
-        else:
-            gender = "unknown"
-            box_color = (200, 200, 200)
-
-        print("Age:", age)
-        print("Gender:", gender)
-
-        # --- age and gender ---
-
-        fontScale = image.shape[1]/750
-
-        text = gender + ' ' + str(age) + ' ' + EMOTION_NAMES[index]
-        cv2.putText(show_image, text, (xmin, ymin), cv2.FONT_HERSHEY_SIMPLEX, fontScale, (0, 200, 0), 8)
-        cv2.rectangle(img=show_image, pt1=(xmin,ymin), pt2=(xmax,ymax), color=box_color, thickness=5)
+        text = EMOTION_NAMES[index]
         
+        # Draw the text and rectangle around the face
+        fontScale = image.shape[1] / 750
+        cv2.putText(show_image, text, (xmin, ymin), cv2.FONT_HERSHEY_SIMPLEX, fontScale, (0, 200, 0), 8)
+        cv2.rectangle(img=show_image, pt1=(xmin, ymin), pt2=(xmax, ymax), color=(0, 200, 0), thickness=2)
+
     return show_image
 
-def predict_image(image, conf_threshold = .5):
+def predict_image(image, conf_threshold):
     input_image = preprocess(image, input_layer_face)
     results = compiled_model_face([input_image])[output_layer_face]
     face_boxes, scores = find_faceboxes(image, results, conf_threshold)
-    visualize_image = draw_age_gender_emotion(face_boxes, image)
+    visualized_image = draw_emotion(face_boxes, image)
 
-    return visualize_image
+    return visualized_image

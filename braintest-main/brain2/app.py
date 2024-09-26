@@ -161,7 +161,7 @@ if source_radio == "VIDEO":
         if st.button("Replay"):
             play_video(temporary_location)
     else:
-        st.video("braintest-main/brain2/assets/emobuddy.mp4)  # Removed caption
+        st.video("braintest-main/brain2/assets/emobuddy.mp4")  # Removed caption
         st.write("Upload a video to analyze.")
 
 if source_radio == "WEBCAM":

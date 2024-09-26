@@ -8,35 +8,35 @@ import io
 # Set page configuration at the beginning
 st.set_page_config(
     page_title="EmoBuddy",
-    page_icon="💅",
+    page_icon="💚",
     layout="centered",
     initial_sidebar_state="expanded",
 )
 
-# Custom CSS for pink-themed styling
+# Custom CSS for a health-focused theme
 st.markdown("""
     <style>
     .main {
-        background-color: #ffeef8;
+        background-color: #e6f7e6;
         font-family: 'Arial', sans-serif;
     }
     .title {
         font-size: 36px;
         font-weight: bold;
-        color: #ff69b4;
+        color: #4caf50;
         margin-bottom: 20px;
         text-align: center;
     }
     .section-title {
         font-size: 24px;
         font-weight: bold;
-        color: #ff1493;
+        color: #388e3c;
         margin-top: 20px;
-        border-bottom: 2px solid #ff1493;
+        border-bottom: 2px solid #388e3c;
         padding-bottom: 10px;
     }
     .button {
-        background-color: #ff1493;
+        background-color: #388e3c;
         color: white;
         border-radius: 5px;
         padding: 10px 20px;
@@ -48,7 +48,7 @@ st.markdown("""
         margin-top: 10px;
     }
     .button:hover {
-        background-color: #ff69b4;
+        background-color: #4caf50;
     }
     .container {
         margin-top: 20px;
@@ -60,11 +60,11 @@ st.markdown("""
         margin-bottom: 20px;
     }
     .info-text {
-        color: #d63e6d;
+        color: #2e7d32;
         font-size: 16px;
     }
     .success-message {
-        color: #ff1493;
+        color: #388e3c;
         font-size: 18px;
     }
     .warning-message {
@@ -74,16 +74,20 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Define the camera_input_live function
-def camera_input_live():
-    cap = cv2.VideoCapture(0)  # Start capturing video from webcam
-    ret, frame = cap.read()     # Read a frame
-    cap.release()               # Release the webcam
-    if ret:
-        _, buffer = cv2.imencode('.jpg', frame)  # Encode the frame as a jpg
-        return io.BytesIO(buffer)                 # Return as BytesIO for PIL to open
-    else:
-        return None
+# Add a header image or logo related to health
+st.image("data/logo.png", width=200)  # Ensure you have a logo at this path
+
+# Title of the app
+st.title("EmoBuddy 💚")
+st.write("### Enhancing Emotional Communication with AI for Better Mental Health")
+
+# Sidebar for user interaction
+st.sidebar.header("Select Input Type")
+source_radio = st.sidebar.radio("Choose Source", ["IMAGE", "VIDEO", "WEBCAM"])
+
+st.sidebar.header("Confidence Level")
+conf_threshold = float(st.sidebar.slider(
+    "Select the Confidence Threshold", 10, 100, 20)) / 100
 
 def play_video(video_source):
     camera = cv2.VideoCapture(video_source)
@@ -93,46 +97,56 @@ def play_video(video_source):
         ret, frame = camera.read()
 
         if ret:
-            visualized_image = utils.predict_image(frame, conf_threshold)  # Change to emotion detection
+            visualized_image = utils.predict_image(frame, conf_threshold)
             st_frame.image(visualized_image, channels="BGR")
         else:
             camera.release()
             break
 
 def play_live_camera():
-    image = camera_input_live()
-    if image is not None:
-        uploaded_image = PIL.Image.open(image)
-        uploaded_image_cv = cv2.cvtColor(np.array(uploaded_image), cv2.COLOR_RGB2BGR)
-        visualized_image = utils.predict_image(uploaded_image_cv, conf_threshold)  # Change to emotion detection
-        st.image(visualized_image, channels="BGR")
+    camera = cv2.VideoCapture(0)  # Start capturing video from webcam
+    if not camera.isOpened():
+        st.error("Webcam not accessible. Please check your camera settings.")
+        return
 
-st.title("EmoBuddy 💅")
+    st_frame = st.empty()  # Create a placeholder for the video frame
 
-st.sidebar.header("Type")
-source_radio = st.sidebar.radio("Select Source", ["IMAGE", "VIDEO", "WEBCAM"])
+    while True:
+        ret, frame = camera.read()  # Read a frame
 
-st.sidebar.header("Confidence")
-conf_threshold = float(st.sidebar.slider(
-    "Select the Confidence Threshold", 10, 100, 20)) / 100
+        if not ret:
+            st.error("Failed to capture image from webcam. Please check your camera.")
+            break
+        
+        # Process the frame for emotion detection
+        visualized_image = utils.predict_image(frame, conf_threshold)
+        
+        # Display the processed frame
+        st_frame.image(visualized_image, channels="BGR")
+        
+        # Allow breaking the loop with a button
+        if st.button("Stop Webcam"):
+            camera.release()
+            break
+    
+    camera.release()
 
 if source_radio == "IMAGE":
-    st.sidebar.header("Upload")
+    st.sidebar.header("Upload Image")
     input = st.sidebar.file_uploader("Choose an image.", type=("jpg", "png"))
 
     if input is not None:
         uploaded_image = PIL.Image.open(input)
         uploaded_image_cv = cv2.cvtColor(np.array(uploaded_image), cv2.COLOR_RGB2BGR)
-        visualized_image = utils.predict_image(uploaded_image_cv, conf_threshold)  # Change to emotion detection
+        visualized_image = utils.predict_image(uploaded_image_cv, conf_threshold)
 
-        st.image(visualized_image, channels="BGR")
-        st.image(uploaded_image)
+        st.image(visualized_image, channels="BGR", caption="Processed Image")
+        st.image(uploaded_image, caption="Uploaded Image")
     else:
-        st.image("braintest-main/brain2/assets/userpage.png")
-        st.write("Click on 'Browse Files' in the sidebar to run inference on an image.")
+        st.image("data/emotions.png", caption="Upload an image to analyze.")
 
 if source_radio == "VIDEO":
-    st.sidebar.header("Upload")
+    st.sidebar.header("Upload Video")
     input = st.sidebar.file_uploader("Choose a video.", type=("mp4"))
 
     if input is not None:
@@ -142,15 +156,25 @@ if source_radio == "VIDEO":
         with open(temporary_location, "wb") as out:
             out.write(g.read())
 
-        out.close()
         play_video(temporary_location)
         
         if st.button("Replay"):
             play_video(temporary_location)
     else:
-        st.video("braintest-main/brain2/assets/uservidd.mp4")
-        st.write("Click on 'Browse Files' in the sidebar to run inference on a video.")
+        st.video("data/emobuddy.mp4")  # Removed caption
+        st.write("Upload a video to analyze.")
 
 if source_radio == "WEBCAM":
+    st.write("### Live Webcam Feed")
+    st.write("Click the button below to start the webcam.")
     play_live_camera()
+    
+    if st.button("Stop Webcam"):
+        st.write("Webcam stopped. Click 'WEBCAM' to start again.")
 
+# Add a footer with information about SDG 3
+st.markdown("""
+    <footer>
+        <p style="text-align: center; color: #4caf50;">Improving emotional communication for better mental health. &copy; [4I1E]</p>
+    </footer>
+""", unsafe_allow_html=True)

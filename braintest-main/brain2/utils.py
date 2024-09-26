@@ -6,14 +6,14 @@ import matplotlib.pyplot as plt
 core = ov.Core()
 
 # Load and compile the face detection model
-model_face = core.read_model(model='Model/face-detection-adas-0001.xml')
+model_face = core.read_model(model='braintest-main/brain2/models/face-detection-adas-0001.xml')
 compiled_model_face = core.compile_model(model=model_face, device_name="CPU")
 
 input_layer_face = compiled_model_face.input(0)
 output_layer_face = compiled_model_face.output(0)
 
 # Load and compile the emotion recognition model
-model_emo = core.read_model(model='Model/emotions-recognition-retail-0003.xml')
+model_emo = core.read_model(model='braintest-main/brain2/models/emotions-recognition-retail-0003.xml')
 compiled_model_emo = core.compile_model(model=model_emo, device_name="CPU")
 
 input_layer_emo = compiled_model_emo.input(0)

@@ -75,7 +75,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Add a header image or logo related to health
-st.image("data/logo.png", width=200)  # Ensure you have a logo at this path
+st.image("braintest-main/brain2/assets/logo.png", width=200)  # Ensure you have a logo at this path
 
 # Title of the app
 st.title("EmoBuddy 💚")

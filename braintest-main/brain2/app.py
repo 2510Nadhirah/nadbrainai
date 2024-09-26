@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 import utils
 import io
+from PIL import Image
+from camera_input_live import camera_input_live
 
 # Set page configuration at the beginning
 st.set_page_config(
@@ -104,32 +106,14 @@ def play_video(video_source):
             break
 
 def play_live_camera():
-    camera = cv2.VideoCapture(0)  # Start capturing video from webcam
-    if not camera.isOpened():
-        st.error("Webcam not accessible. Please check your camera settings.")
-        return
+    image = camera_input_live()
+    uploaded_image = PIL.Image.open(image)
+    uploaded_image_cv = cv2.cvtColor(np.array(uploaded_image), cv2.COLOR_RGB2BGR)
+    visualized_image = utils.predict_image(uploaded_image_cv, conf_threshold)
+    st.image(visualized_image, channels = "BGR")
 
-    st_frame = st.empty()  # Create a placeholder for the video frame
-
-    while True:
-        ret, frame = camera.read()  # Read a frame
-
-        if not ret:
-            st.error("Failed to capture image from webcam. Please check your camera.")
-            break
-        
-        # Process the frame for emotion detection
-        visualized_image = utils.predict_image(frame, conf_threshold)
-        
-        # Display the processed frame
-        st_frame.image(visualized_image, channels="BGR")
-        
-        # Allow breaking the loop with a button
-        if st.button("Stop Webcam"):
-            camera.release()
-            break
-    
-    camera.release()
+if source_radio == "WEBCAM":
+    play_live_camera()
 
 if source_radio == "IMAGE":
     st.sidebar.header("Upload Image")
@@ -164,17 +148,5 @@ if source_radio == "VIDEO":
         st.video("braintest-main/brain2/assets/emobuddy.mp4")  # Removed caption
         st.write("Upload a video to analyze.")
 
-if source_radio == "WEBCAM":
-    st.write("### Live Webcam Feed")
-    st.write("Click the button below to start the webcam.")
-    play_live_camera()
-    
-    if st.button("Stop Webcam"):
-        st.write("Webcam stopped. Click 'WEBCAM' to start again.")
 
-# Add a footer with information about SDG 3
-st.markdown("""
-    <footer>
-        <p style="text-align: center; color: #4caf50;">Improving emotional communication for better mental health. &copy; [4I1E]</p>
-    </footer>
-""", unsafe_allow_html=True)
+
